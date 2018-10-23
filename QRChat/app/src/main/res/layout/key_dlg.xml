@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_root"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:padding="10dp" >
+
+    <TextView
+        android:id="@+id/name_cpt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Название чата"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/design_default_color_primary_dark" />
+
+    <EditText
+        android:id="@+id/chat_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/background_dark">
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:id="@+id/key_cpt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Основа ключа"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/design_default_color_primary_dark" />
+
+    <EditText
+        android:id="@+id/key_value"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:inputType="text|textMultiLine"
+        android:gravity="top"/>
+
+</LinearLayout>
