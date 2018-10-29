@@ -14,6 +14,9 @@ android {
                 cppFlags ""
             }
         }
+        testOptions {
+            unitTests.returnDefaultValues = true
+        }
     }
     buildTypes {
         release {

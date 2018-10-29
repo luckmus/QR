@@ -2,6 +2,11 @@ package com.chatqr.bl.dao.model;
 
 import com.chatqr.bl.dao.model.transport.TranspProtocolIf;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+
 public abstract class AbstractMessageData {
     public enum MessageFormat{
         Text
@@ -10,6 +15,12 @@ public abstract class AbstractMessageData {
     private TranspProtocolIf transport;
 
     public abstract MessageFormat getMessageFormat();
+    public abstract JSONObject toJSON() throws JSONException;
+
+    public byte[] toJSONBytes() throws JSONException {
+        return toJSON().toString().getBytes(java.nio.charset.Charset.forName("UTF8"));
+
+    }
 
     public byte[] getData() {
         return data;

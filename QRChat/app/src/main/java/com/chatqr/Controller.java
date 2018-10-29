@@ -47,7 +47,6 @@ public class Controller {
         showChat(context);
     }
 
-
     public Chat createChat(Context context,String name, String base){
         Key key = Helper.generateKey(base);
         Chat chat = DAO.getInstance().createChatByKey(key, name);

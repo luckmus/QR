@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.chatqr.Controller;
 import com.chatqr.bl.crypto.Helper;
@@ -11,8 +12,13 @@ import com.chatqr.bl.dao.model.Chat;
 import com.chatqr.bl.dao.model.Key;
 import com.chatqr.bl.dao.model.Message;
 import com.chatqr.bl.dao.model.Settings;
+import com.chatqr.bl.dao.model.TextMessageData;
 import com.chatqr.bl.dao.model.User;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -69,7 +75,17 @@ public class DAO {
         db.execSQL("CREATE TABLE IF NOT EXISTS "+TABLE_CHAT+" ("+FIELD_ID+" INTEGER  PRIMARY KEY AUTOINCREMENT, "+CHAT_ID_KEY+" INTEGER , "+CHAT_NAME+" TEXT, "+CHAT_INS_DATE+" TEXT, "+CHAT_CHANGE_DATE+" TEXT, FOREIGN KEY ("+CHAT_ID_KEY+") REFERENCES  "+TABLE_KEYS+"("+FIELD_ID+") )");
         db.execSQL("CREATE TABLE IF NOT EXISTS "+TABLE_MESSAGE+" ("+FIELD_ID+" INTEGER  PRIMARY KEY AUTOINCREMENT, "+MESSAGE_ID_CHAT+" INTEGER , "+MESSAGE_DATA+" BLOB, "+MESSAGE_INS_DATE+" TEXT, "+MESSAGE_GEN_DATE+" TEXT, "+MESSAGE_READ+" INTEGER DEFAULT 0, "+MESSAGE_LOGIN+" TEXT, FOREIGN KEY ("+MESSAGE_ID_CHAT+") REFERENCES  "+TABLE_CHAT+"("+FIELD_ID+") )");
         db.execSQL("CREATE TABLE IF NOT EXISTS "+TABLE_SETTINGS+" ("+SETTINGS_LOGIN+" TEXT )");
+
         return true;
+    }
+
+    public Collection<Key> getKeysByHash(int keyHash){
+        Cursor cursor = db.query(TABLE_KEYS,
+                new String[]{FIELD_ID, KEYS_BASE, KEYS_VER, KEYS_HASH},
+                KEYS_HASH+"=?", new String[]{Integer.toString(keyHash)},
+                null,null, null);
+        Collection<Key> res = readKeys(cursor);
+        return res;
     }
 
     public boolean isSettingsExist(){
@@ -110,11 +126,11 @@ public class DAO {
         values.put(MESSAGE_ID_CHAT, message.getIdChat());
         values.put(MESSAGE_DATA, message.getData());
         values.put(MESSAGE_INS_DATE, calendarTostring(message.getInsDate()));
-        values.put(MESSAGE_GEN_DATE, calendarTostring(message.getGenDate()));
+        values.put(MESSAGE_GEN_DATE, calendarTostring(message.getGenDate()==null?Calendar.getInstance():message.getGenDate()));
         values.put(MESSAGE_READ, message.getRead());
         values.put(MESSAGE_LOGIN, message.getLogin()==null?null:message.getLogin());
 
-        if (message.getId()==null){
+        if (message.getDbId()==null){
             long res = (Long)db.insert(TABLE_MESSAGE, null, values);
             message.setDbId(res);
         }else{
@@ -128,6 +144,17 @@ public class DAO {
                 MESSAGE_ID_CHAT+"=?", new String[]{Long.toString(idChat)},
                 null,null, MESSAGE_GEN_DATE+" desc");
         return readMessages(cursor);
+    }
+
+    public Key getKeyForChat(long chatId){
+        try {
+            Chat chat = getChat(chatId);
+            Key key = getKey(chat.getIdKey());
+            return key;
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public Collection<Message> getMessages(long idChat, int offset, int size){
@@ -286,6 +313,27 @@ public class DAO {
         db.endTransaction();
     }
 
+    public Chat getChatForKey(long keyId){
+        Cursor cursor = db.query(TABLE_CHAT,
+                new String[]{FIELD_ID, CHAT_ID_KEY, CHAT_NAME, CHAT_INS_DATE, CHAT_CHANGE_DATE},
+                CHAT_ID_KEY+"=?", new String[]{Long.toString(keyId)},
+                null,null, CHAT_CHANGE_DATE+" desc");
+
+        Collection<Chat> res = readChats(cursor);
+        return res.isEmpty()?null:res.iterator().next();
+    }
+
+    public Chat getChat(long id){
+        Cursor cursor = db.query(TABLE_CHAT,
+                new String[]{FIELD_ID, CHAT_ID_KEY, CHAT_NAME, CHAT_INS_DATE, CHAT_CHANGE_DATE},
+                FIELD_ID+"=?", new String[]{Long.toString(id)},
+                null,null, CHAT_CHANGE_DATE+" desc");
+
+        Collection<Chat> chats = readChats(cursor);
+
+        return chats.isEmpty()?null:chats.iterator().next();
+    }
+
     public Collection<Chat> getChats(){
         Cursor cursor = db.query(TABLE_CHAT,
                 new String[]{FIELD_ID, CHAT_ID_KEY, CHAT_NAME, CHAT_INS_DATE, CHAT_CHANGE_DATE},
@@ -309,7 +357,7 @@ public class DAO {
                 if (idIndex >= 0) {
                     chat.setDbId(cursor.getLong(idIndex));
                 }
-                chat.setDbId(cursor.getLong(keyIndex));
+                chat.setIdKey(cursor.getLong(keyIndex));
                 if (nameIndex >= 0) {
                     chat.setName(cursor.getString(nameIndex));
                 }
@@ -332,6 +380,7 @@ public class DAO {
             res.setTime(d);
             return res;
         } catch (ParseException e) {
+            e.printStackTrace();
             return null;
         }
     }

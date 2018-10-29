@@ -5,8 +5,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.chatqr.R;
+import com.chatqr.bl.ChatController;
 import com.chatqr.bl.dao.model.Chat;
 import com.chatqr.bl.dao.model.Message;
 import com.chatqr.bl.fixtures.MessagesFixtures;
@@ -30,10 +32,12 @@ public class DefaultMessagesActivity extends DemoMessagesActivity
     }
 
     private MessagesList messagesList;
+    private Chat chat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        chat = (Chat) getIntent().getSerializableExtra(CHAT_EXT);
         setContentView(R.layout.activity_default_messages);
 
         this.messagesList = (MessagesList) findViewById(R.id.messagesList);
@@ -52,6 +56,13 @@ public class DefaultMessagesActivity extends DemoMessagesActivity
                 MessagesFixtures.getTextMessage(input.toString()),
                 true);
                 */
+        Toast.makeText(this,input, Toast.LENGTH_SHORT).show();
+        try {
+            ChatController.generateTextMessageAndSave(input.toString(), "utf8", chat);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this,e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
         return true;
     }
 

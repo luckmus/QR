@@ -8,12 +8,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.chatqr.R;
 
 
 import com.chatqr.bl.dao.DAO;
 import com.chatqr.bl.dao.model.Chat;
+import com.chatqr.bl.dao.model.Key;
 import com.chatqr.bl.dao.model.Message;
 import com.chatqr.bl.fixtures.MessagesFixtures;
 import com.chatqr.utils.AppUtils;
@@ -46,11 +48,13 @@ public abstract class DemoMessagesActivity extends AppCompatActivity
     private int selectionCount;
     private Date lastLoadedDate;
     private Chat chat;
+    private Key key;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         chat = (Chat) getIntent().getSerializableExtra(CHAT_EXT);
+        //key = DAO.getInstance().getKey(chat.getIdKey());
         imageLoader = new ImageLoader() {
             @Override
             public void loadImage(ImageView imageView, String url, Object payload) {
@@ -67,6 +71,7 @@ public abstract class DemoMessagesActivity extends AppCompatActivity
             messagesAdapter.addToStart(msg, true);
         }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

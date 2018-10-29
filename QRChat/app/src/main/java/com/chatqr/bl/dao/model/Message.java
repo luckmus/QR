@@ -1,6 +1,7 @@
 package com.chatqr.bl.dao.model;
 
 import com.chatqr.bl.crypto.Decoder;
+import com.chatqr.bl.dao.DAO;
 import com.stfalcon.chatkit.commons.models.IMessage;
 import com.stfalcon.chatkit.commons.models.IUser;
 
@@ -10,6 +11,7 @@ import java.util.Date;
 public class Message implements IMessage  {
     private Long dbId;
     private Long idChat;
+    private transient Chat chat;
     private byte[] data;
     private String login;
     private Calendar insDate;
@@ -26,7 +28,7 @@ public class Message implements IMessage  {
 
     @Override
     public String getText() {
-        return ((TextMessageData)getMessage()).getText();
+        return getMessage()==null?null: ((TextMessageData)getMessage()).getText();
     }
 
     @Override
@@ -36,12 +38,20 @@ public class Message implements IMessage  {
 
     @Override
     public Date getCreatedAt() {
-        return genDate.getTime();
+        return genDate==null?null:genDate.getTime();
     }
 
     public AbstractMessageData getMessage() {
+        //key = DAO.getInstance().getKey()
+
         if (message == null){
-            message = (Decoder.getInstance().decode(data, key.getVer(), key.getHash()));
+            key = DAO.getInstance().getKeyForChat(idChat);
+            if (key==null){
+                return null;
+            }else {
+                message = (Decoder.getInstance().decode(data, key.getVer(), key.getHash(), null));
+            }
+
         }
         return message;
     }
@@ -100,5 +110,13 @@ public class Message implements IMessage  {
 
     public void setLogin(String login) {
         this.login = login;
+    }
+
+    public Chat getChat() {
+        return chat;
+    }
+
+    public void setChat(Chat chat) {
+        this.chat = chat;
     }
 }
