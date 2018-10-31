@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.chatqr.Controller;
 import com.chatqr.R;
 import com.chatqr.bl.ChatController;
 import com.chatqr.bl.dao.model.Chat;
@@ -58,7 +59,8 @@ public class DefaultMessagesActivity extends DemoMessagesActivity
                 */
         Toast.makeText(this,input, Toast.LENGTH_SHORT).show();
         try {
-            ChatController.generateTextMessageAndSave(input.toString(), "utf8", chat);
+            Message message = ChatController.generateTextMessageAndSave(input.toString(), "utf8", chat);
+            addToStart(message);
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this,e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -98,5 +100,10 @@ public class DefaultMessagesActivity extends DemoMessagesActivity
     @Override
     public void onStopTyping() {
         Log.v("Typing listener", getString(R.string.stop_typing_status));
+    }
+
+    @Override
+    public void onBackPressed() {
+        Controller.getInstance().navigateToCurrentMenu(this);
     }
 }

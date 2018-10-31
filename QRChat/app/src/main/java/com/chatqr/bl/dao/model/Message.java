@@ -33,7 +33,7 @@ public class Message implements IMessage  {
 
     @Override
     public IUser getUser() {
-        return new User(login);
+        return new User(login==null?"":login);
     }
 
     @Override

@@ -119,17 +119,32 @@ public abstract class DemoMessagesActivity extends AppCompatActivity
         menu.findItem(R.id.action_copy).setVisible(count > 0);
     }
 
+    protected void addToStart(Message messages){
+        messagesAdapter.addToStart(messages, true);
+    }
+
     protected void loadMessages() {
+        ArrayList<Message> messages = new ArrayList();
+        Collection<Message> m = MessagesFixtures.getMessages(chat.getDbId(), lastLoadedDate);
+        if(m.isEmpty()){
+            return;
+        }
+        messages.addAll(m);
+        lastLoadedDate = messages.get(messages.size() - 1).getCreatedAt();
+        Log.i("TAG", String.format("load %d messages, new lastDate: %s ",m.size(),lastLoadedDate==null?"":DAO.getInstance().iso8601Format.format(lastLoadedDate)));
+        messagesAdapter.addToEnd(messages, false);
+/*
         new Handler().postDelayed(new Runnable() { //imitation of internet connection
             @Override
             public void run() {
                 ArrayList<Message> messages = new ArrayList();
                 Collection<Message> m = MessagesFixtures.getMessages(chat.getDbId(), lastLoadedDate);
-                messages.addAll(messages);
+                messages.addAll(m);
                 lastLoadedDate = messages.get(messages.size() - 1).getCreatedAt();
                 messagesAdapter.addToEnd(messages, false);
             }
         }, 1000);
+        */
     }
 
     private MessagesListAdapter.Formatter<Message> getMessageStringFormatter() {

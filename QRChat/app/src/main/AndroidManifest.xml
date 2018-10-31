@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.chatqr">
-
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -25,7 +25,19 @@
         <activity
             android:name=".ui.features.demo.def.DefaultMessagesActivity"
             android:theme="@style/BlueTheme" />
-        <activity android:name=".ui.features.InitActivity"></activity>
+        <activity android:name=".ui.features.InitActivity" />
+        <activity android:name=".ui.ImportActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.EDIT" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
     </application>
 
-</manifest>
+</manifest> <!-- intent-filter https://stackoverflow.com/questions/36326478/how-to-open-a-single-image-in-my-app-from-file-explorer -->

@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void init(){
         Controller.BASE_APP_CONTEXT = this;
-        DAO.getInstance();
+        DAO.getNewInstance(getApplicationContext());
     }
 
     @Override

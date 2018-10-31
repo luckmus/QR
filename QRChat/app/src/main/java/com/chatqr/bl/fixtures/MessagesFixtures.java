@@ -39,7 +39,7 @@ public final class MessagesFixtures extends FixturesData {
 
     public static Collection<com.chatqr.bl.dao.model.Message> getMessages(long chatId, Date startDate) {
         ArrayList<com.chatqr.bl.dao.model.Message> messages = new ArrayList<>();
-        messages.addAll(DAO.getInstance().getMessages(chatId));
+        messages.addAll(DAO.getInstance().getMessages(chatId, startDate));
         return messages;
     }
 

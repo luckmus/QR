@@ -15,6 +15,7 @@ public class Chat implements IDialog<Message>, Serializable {
     private String name;
     private Calendar insDate;
     private Calendar changeDate;
+    private Message lastMsg;
 
     public Long getDbId() {
         return dbId;
@@ -78,9 +79,22 @@ public class Chat implements IDialog<Message>, Serializable {
 
     @Override
     public Message getLastMessage() {
+        /*
+        if (lastMsg == null){
+            loadLastMsg();
+        }
+        return lastMsg;
+        */
         Collection<com.chatqr.bl.dao.model.Message> msgs = DAO.getInstance().getMessages(dbId, 0,1);
-        return msgs.isEmpty()?null:msgs.iterator().next();
+        return   msgs.isEmpty()?null:msgs.iterator().next();
     }
+
+
+    void loadLastMsg(){
+        Collection<com.chatqr.bl.dao.model.Message> msgs = DAO.getInstance().getMessages(dbId, 0,1);
+        lastMsg =  msgs.isEmpty()?null:msgs.iterator().next();
+    }
+
 
     @Override
     public void setLastMessage(Message message) {

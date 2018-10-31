@@ -53,7 +53,7 @@ public class ChatController {
 
     public static Message generateTextMessageAndSave(String msg, String encode, Chat chat) throws Exception {
         Message m = generateTextMessage(msg, encode, chat);
-        DAO.getInstance().save(m);
+        m = DAO.getInstance().save(m);
         return m;
     }
 

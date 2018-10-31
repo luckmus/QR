@@ -31,7 +31,12 @@ public class TextMessageData extends AbstractMessageData {
     }
 
     public TextMessageData(byte[] data){
-        this.text = data == null?null:new String(data);
+        try {
+            this.text = data == null?"":new JSONObject(new String(data)).getString(TEXT);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            this.text = "error on load";
+        }
     }
 
     @Override

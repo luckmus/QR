@@ -52,14 +52,15 @@ public class DAO {
     private static final String SETTINGS_LOGIN="login";
     private SQLiteDatabase db;
     private static final String DB_NAME = "chat_qr.db";
-    SimpleDateFormat iso8601Format = new SimpleDateFormat(     "yyyy-MM-dd HH:mm:ss");
+    public SimpleDateFormat iso8601Format = new SimpleDateFormat(     "yyyy-MM-dd HH:mm:ss");
+    private Context context;
 
-    public static DAO getInstance() {
+    public static DAO getNewInstance(Context context) {
         if (instance == null) {
             synchronized (DAO.class) {
                 if (instance == null) {
                     DAO res = new DAO();
-                    if (res.init()) {
+                    if (res.init(context)) {
                         instance = res;
                     }
                 }
@@ -68,9 +69,13 @@ public class DAO {
         return instance;
     }
 
-    private boolean init() {
+    public static DAO getInstance() {
+        return instance;
+    }
+
+    private boolean init(Context context) {
         //Controller.BASE_APP_CONTEXT.deleteDatabase(DB_NAME);
-        db = Controller.BASE_APP_CONTEXT.openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
+        db = context.openOrCreateDatabase(DB_NAME, MODE_PRIVATE, null);
         db.execSQL("CREATE TABLE IF NOT EXISTS "+TABLE_KEYS+" ("+FIELD_ID+" INTEGER  PRIMARY KEY AUTOINCREMENT, "+KEYS_BASE+" TEXT NOT NULL UNIQUE, "+KEYS_VER+" TEXT, "+KEYS_HASH+" INTEGER)");
         db.execSQL("CREATE TABLE IF NOT EXISTS "+TABLE_CHAT+" ("+FIELD_ID+" INTEGER  PRIMARY KEY AUTOINCREMENT, "+CHAT_ID_KEY+" INTEGER , "+CHAT_NAME+" TEXT, "+CHAT_INS_DATE+" TEXT, "+CHAT_CHANGE_DATE+" TEXT, FOREIGN KEY ("+CHAT_ID_KEY+") REFERENCES  "+TABLE_KEYS+"("+FIELD_ID+") )");
         db.execSQL("CREATE TABLE IF NOT EXISTS "+TABLE_MESSAGE+" ("+FIELD_ID+" INTEGER  PRIMARY KEY AUTOINCREMENT, "+MESSAGE_ID_CHAT+" INTEGER , "+MESSAGE_DATA+" BLOB, "+MESSAGE_INS_DATE+" TEXT, "+MESSAGE_GEN_DATE+" TEXT, "+MESSAGE_READ+" INTEGER DEFAULT 0, "+MESSAGE_LOGIN+" TEXT, FOREIGN KEY ("+MESSAGE_ID_CHAT+") REFERENCES  "+TABLE_CHAT+"("+FIELD_ID+") )");
@@ -80,12 +85,13 @@ public class DAO {
     }
 
     public Collection<Key> getKeysByHash(int keyHash){
-        Cursor cursor = db.query(TABLE_KEYS,
+        try(Cursor cursor = db.query(TABLE_KEYS,
                 new String[]{FIELD_ID, KEYS_BASE, KEYS_VER, KEYS_HASH},
                 KEYS_HASH+"=?", new String[]{Integer.toString(keyHash)},
-                null,null, null);
-        Collection<Key> res = readKeys(cursor);
-        return res;
+                null,null, null);) {
+            Collection<Key> res = readKeys(cursor);
+            return res;
+        }
     }
 
     public boolean isSettingsExist(){
@@ -115,7 +121,7 @@ public class DAO {
         }
     }
 
-    public void save(Message message){
+    public Message save(Message message){
         if (message == null){
             throw new NullPointerException("save message is null");
         }
@@ -136,14 +142,40 @@ public class DAO {
         }else{
             db.update(TABLE_MESSAGE, values, FIELD_ID+"=?", new String[]{Long.toString(message.getDbId())});
         }
+        return getMessage(message.getDbId());
+    }
+
+    public Message getMessage(long id){
+        try(Cursor cursor = db.query(TABLE_MESSAGE,
+                new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_READ },
+                FIELD_ID+"=?", new String[]{Long.toString(id)},
+                null,null, MESSAGE_GEN_DATE+" desc");) {
+            Collection<Message> res = readMessages(cursor);
+            return res.isEmpty() ? null : res.iterator().next();
+        }
     }
 
     public Collection<Message> getMessages(long idChat){
-        Cursor cursor = db.query(TABLE_MESSAGE,
+        try(Cursor cursor = db.query(TABLE_MESSAGE,
                 new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_READ },
                 MESSAGE_ID_CHAT+"=?", new String[]{Long.toString(idChat)},
-                null,null, MESSAGE_GEN_DATE+" desc");
-        return readMessages(cursor);
+                null,null, MESSAGE_GEN_DATE+" desc");) {
+            return readMessages(cursor);
+        }
+    }
+
+    public Collection<Message> getMessages(long idChat, Date startDate){
+        Log.i("TAG", "start Date: "+(startDate==null?"": iso8601Format.format(startDate)));
+        if (startDate==null){
+            return getMessages(idChat, 1, 2);
+        }
+        try(Cursor cursor = db.query(TABLE_MESSAGE,
+                new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_READ },
+                MESSAGE_ID_CHAT+"=? AND "+MESSAGE_GEN_DATE+"<?", new String[]{Long.toString(idChat), startDate==null?"": iso8601Format.format(startDate)},
+                //MESSAGE_ID_CHAT+"=?", new String[]{Long.toString(idChat)},
+                null,null, MESSAGE_GEN_DATE+" desc");) {
+            return readMessages(cursor);
+        }
     }
 
     public Key getKeyForChat(long chatId){
@@ -158,23 +190,25 @@ public class DAO {
     }
 
     public Collection<Message> getMessages(long idChat, int offset, int size){
-        Cursor cursor = db.query(TABLE_MESSAGE,
+        try(Cursor cursor = db.query(TABLE_MESSAGE,
                 new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_LOGIN },
                 MESSAGE_ID_CHAT+"=?", new String[]{Long.toString(idChat)},
                 null,null, MESSAGE_GEN_DATE+" desc",
-                String.format("%d, %d", offset, size));
-        return readMessages(cursor);
+                String.format("%d, %d", offset, size));) {
+            return readMessages(cursor);
+        }
     }
 
     public List<User> getUsers(long chatId){
-        Cursor cursor = db.query(true, TABLE_MESSAGE, new String[]{MESSAGE_LOGIN},
+        try(Cursor cursor = db.query(true, TABLE_MESSAGE, new String[]{MESSAGE_LOGIN},
                 MESSAGE_ID_CHAT+"=?",new String[]{Long.toString(chatId)}, null,
-                null, null,null);
-        LinkedList<User> res = new LinkedList<>();
-        while (cursor.moveToNext()){
-            res.add(new User(cursor.getString(0)));
+                null, null,null);) {
+            LinkedList<User> res = new LinkedList<>();
+            while (cursor.moveToNext()) {
+                res.add(new User(cursor.getString(0)));
+            }
+            return res;
         }
-        return res;
     }
 
     private Collection<Message> readMessages(Cursor cursor) {
@@ -244,12 +278,13 @@ public class DAO {
     }
 
     public Key getKey(long id){
-        Cursor cursor = db.query(TABLE_KEYS,
+        try(Cursor cursor = db.query(TABLE_KEYS,
                 new String[]{FIELD_ID, KEYS_BASE, KEYS_VER, KEYS_HASH},
                 FIELD_ID+"=?", new String[]{Long.toString(id)},
-                null,null, null);
-        Collection<Key> res = readKeys(cursor);
-        return res.isEmpty()?null:res.iterator().next();
+                null,null, null);) {
+            Collection<Key> res = readKeys(cursor);
+            return res.isEmpty() ? null : res.iterator().next();
+        }
     }
 
     private Collection<Key> readKeys(Cursor cursor) {
@@ -314,33 +349,36 @@ public class DAO {
     }
 
     public Chat getChatForKey(long keyId){
-        Cursor cursor = db.query(TABLE_CHAT,
+        try(Cursor cursor = db.query(TABLE_CHAT,
                 new String[]{FIELD_ID, CHAT_ID_KEY, CHAT_NAME, CHAT_INS_DATE, CHAT_CHANGE_DATE},
                 CHAT_ID_KEY+"=?", new String[]{Long.toString(keyId)},
-                null,null, CHAT_CHANGE_DATE+" desc");
+                null,null, CHAT_CHANGE_DATE+" desc");) {
 
-        Collection<Chat> res = readChats(cursor);
-        return res.isEmpty()?null:res.iterator().next();
+            Collection<Chat> res = readChats(cursor);
+            return res.isEmpty() ? null : res.iterator().next();
+        }
     }
 
     public Chat getChat(long id){
-        Cursor cursor = db.query(TABLE_CHAT,
+        try(Cursor cursor = db.query(TABLE_CHAT,
                 new String[]{FIELD_ID, CHAT_ID_KEY, CHAT_NAME, CHAT_INS_DATE, CHAT_CHANGE_DATE},
                 FIELD_ID+"=?", new String[]{Long.toString(id)},
-                null,null, CHAT_CHANGE_DATE+" desc");
+                null,null, CHAT_CHANGE_DATE+" desc");) {
 
-        Collection<Chat> chats = readChats(cursor);
+            Collection<Chat> chats = readChats(cursor);
 
-        return chats.isEmpty()?null:chats.iterator().next();
+            return chats.isEmpty() ? null : chats.iterator().next();
+        }
     }
 
     public Collection<Chat> getChats(){
-        Cursor cursor = db.query(TABLE_CHAT,
+        try(Cursor cursor = db.query(TABLE_CHAT,
                 new String[]{FIELD_ID, CHAT_ID_KEY, CHAT_NAME, CHAT_INS_DATE, CHAT_CHANGE_DATE},
                 null, null,
-                null,null, CHAT_CHANGE_DATE+" desc");
+                null,null, CHAT_CHANGE_DATE+" desc");) {
 
-        return readChats(cursor);
+            return readChats(cursor);
+        }
     }
 
     private Collection<Chat> readChats(Cursor cursor) {
