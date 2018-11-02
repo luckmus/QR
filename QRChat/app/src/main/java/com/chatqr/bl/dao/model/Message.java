@@ -42,8 +42,6 @@ public class Message implements IMessage  {
     }
 
     public AbstractMessageData getMessage() {
-        //key = DAO.getInstance().getKey()
-
         if (message == null){
             key = DAO.getInstance().getKeyForChat(idChat);
             if (key==null){
