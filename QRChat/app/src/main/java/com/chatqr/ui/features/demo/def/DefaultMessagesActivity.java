@@ -2,6 +2,7 @@ package com.chatqr.ui.features.demo.def;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -10,7 +11,11 @@ import android.widget.Toast;
 import com.chatqr.Controller;
 import com.chatqr.R;
 import com.chatqr.bl.ChatController;
+import com.chatqr.bl.QRCodeHelper;
+import com.chatqr.bl.dao.DAO;
 import com.chatqr.bl.dao.model.Chat;
+import com.chatqr.bl.dao.model.InterractMessage;
+import com.chatqr.bl.dao.model.Key;
 import com.chatqr.bl.dao.model.Message;
 import com.chatqr.bl.fixtures.MessagesFixtures;
 import com.chatqr.ui.features.demo.DemoMessagesActivity;
@@ -34,11 +39,13 @@ public class DefaultMessagesActivity extends DemoMessagesActivity
 
     private MessagesList messagesList;
     private Chat chat;
+    private Key key;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         chat = (Chat) getIntent().getSerializableExtra(CHAT_EXT);
+        key = DAO.getInstance().getKey(chat.getIdKey());
         setContentView(R.layout.activity_default_messages);
 
         this.messagesList = (MessagesList) findViewById(R.id.messagesList);
@@ -90,6 +97,15 @@ public class DefaultMessagesActivity extends DemoMessagesActivity
                     }
                 });
         this.messagesList.setAdapter(super.messagesAdapter);
+        super.messagesAdapter.setOnMessageClickListener(new MessagesListAdapter.OnMessageClickListener<Message>() {
+            @Override
+            public void onMessageClick(Message message) {
+                AppUtils.showToast(DefaultMessagesActivity.this,
+                        "dbId: "+message.getDbId(),
+                        false);
+                Controller.getInstance().export(DefaultMessagesActivity.this, message, key);
+            }
+        });
     }
 
     @Override

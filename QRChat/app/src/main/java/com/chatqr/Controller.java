@@ -2,18 +2,28 @@ package com.chatqr;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.chatqr.bl.ChatController;
+import com.chatqr.bl.QRCodeHelper;
 import com.chatqr.bl.crypto.Helper;
 import com.chatqr.bl.dao.DAO;
 import com.chatqr.bl.dao.model.Chat;
+import com.chatqr.bl.dao.model.InterractMessage;
 import com.chatqr.bl.dao.model.Key;
+import com.chatqr.bl.dao.model.Message;
 import com.chatqr.bl.dao.model.Settings;
+import com.chatqr.ui.ImportActivity;
 import com.chatqr.ui.features.InitActivity;
 import com.chatqr.ui.features.demo.def.DefaultDialogsActivity;
+import com.chatqr.ui.features.demo.def.DefaultMessagesActivity;
+import com.chatqr.utils.AppUtils;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -78,7 +88,27 @@ public class Controller {
             e.printStackTrace();
         }
 
+    }
 
+    public void export(Context context, Message message, Key key){
+        InterractMessage imsg = new InterractMessage(message, key);
+        try {
+            String data = ChatController.getInstance().generateBinaryDataForQR(imsg);
+            Log.i("TAG", data);
+            Bitmap bMap =QRCodeHelper.newInstance().setContent(data).generate();
+            String bitmapPath = MediaStore.Images.Media.insertImage(context.getContentResolver(), bMap,"title", null);
+            Uri bitmapUri = Uri.parse(bitmapPath);
 
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.putExtra(Intent.EXTRA_TEXT, "download this image");
+            intent.putExtra(Intent.EXTRA_STREAM, bitmapUri);
+            intent.setType("image/*");
+            context.startActivity(Intent.createChooser(intent, "Share image via..."));
+        }catch (Exception e){
+            e.printStackTrace();
+            AppUtils.showToast(context,
+                    e.getMessage(),
+                    false);
+        }
     }
 }

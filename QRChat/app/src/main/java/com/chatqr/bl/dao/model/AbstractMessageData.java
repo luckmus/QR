@@ -1,5 +1,6 @@
 package com.chatqr.bl.dao.model;
 
+import com.chatqr.bl.ChatController;
 import com.chatqr.bl.dao.model.transport.TranspProtocolIf;
 
 import org.json.JSONException;
@@ -18,7 +19,7 @@ public abstract class AbstractMessageData {
     public abstract JSONObject toJSON() throws JSONException;
 
     public byte[] toJSONBytes() throws JSONException {
-        return toJSON().toString().getBytes(java.nio.charset.Charset.forName("UTF8"));
+        return ChatController.getInstance().jsonToBytes(toJSON());
 
     }
 

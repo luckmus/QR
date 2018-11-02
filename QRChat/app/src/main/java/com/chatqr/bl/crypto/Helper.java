@@ -35,7 +35,7 @@ public class Helper {
         return android.util.Base64.decode(msgData, android.util.Base64.DEFAULT);
     }
 
-    static String encodeMsgData( byte[] msgData){
+    public static String encodeMsgData( byte[] msgData){
         return android.util.Base64.encodeToString(msgData, android.util.Base64.DEFAULT);
     }
 

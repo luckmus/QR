@@ -56,6 +56,11 @@ public class Message implements IMessage  {
         return message;
     }
 
+    @Deprecated
+    public void setMessage(AbstractMessageData message) {
+        this.message = message;
+    }
+
     public Long getDbId() {
         return dbId;
     }

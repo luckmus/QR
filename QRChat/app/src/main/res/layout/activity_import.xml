@@ -18,15 +18,8 @@
         android:id="@+id/button3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/QRImage"
         android:onClick="imp"
-        android:text="imp"
-        android:layout_below="@+id/QRImage"/>
+        android:text="Принять" />
 
-    <Button
-        android:id="@+id/button4"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="exp"
-        android:text="exp"
-        android:layout_below="@+id/button3"/>
 </LinearLayout>

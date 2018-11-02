@@ -108,5 +108,6 @@
     <string name="error_on_save_settings">Ошибка сохранения настроек</string>
     <string name="chat_name_frmt">Новый чат (%s)</string>
     <string name="unknow_key">Ключ для расшифровки сообщения не найден</string>
+    <string name="error_on_scan_qr_code">Ошибка разбора QR кода</string>
 
 </resources>

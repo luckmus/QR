@@ -7,12 +7,14 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.transition.ChangeTransform;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.chatqr.R;
+import com.chatqr.bl.ChatController;
 import com.chatqr.bl.QRCodeHelper;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.ChecksumException;
@@ -37,9 +39,14 @@ public class ImportActivity extends AppCompatActivity {
         setContentView(R.layout.activity_import);
         ImageView picView = (ImageView) findViewById(R.id.QRImage);
 
+
         Intent receivedIntent = getIntent();
         String receivedAction = receivedIntent.getAction();
         String receivedType = receivedIntent.getType();
+
+
+
+
 
         // make sure it's an action and type we can handle
         if (receivedAction.equals(Intent.ACTION_SEND)) {
@@ -62,32 +69,19 @@ public class ImportActivity extends AppCompatActivity {
             }
 
         }
+
     }
 
 
-    private void scan() throws FormatException, ChecksumException, NotFoundException {
+    private void scan() {
         //https://stackoverflow.com/questions/29649673/scan-barcode-from-an-image-in-gallery-android
         ImageView picView =findViewById(R.id.QRImage);
         Bitmap bMap = ((BitmapDrawable)picView.getDrawable()).getBitmap();;
-        String contents = null;
-
-        int[] intArray = new int[bMap.getWidth()*bMap.getHeight()];
-//copy pixel data from the Bitmap into the 'intArray' array
-        bMap.getPixels(intArray, 0, bMap.getWidth(), 0, 0, bMap.getWidth(), bMap.getHeight());
-
-        LuminanceSource source = new RGBLuminanceSource(bMap.getWidth(), bMap.getHeight(), intArray);
-        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-
-        Reader reader = new MultiFormatReader();
-        Result result = reader.decode(bitmap);
-        contents = result.getText();
-        Toast.makeText(this, contents, Toast.LENGTH_LONG).show();
+        ChatController.getInstance().scan(this, bMap);
     }
 
     public void imp(View view){
-        Bitmap bm =QRCodeHelper.newInstance().setContent("hello").generate();
-        ImageView picView =findViewById(R.id.QRImage);
-        picView.setImageBitmap(bm);
+        scan();
     }
 
     public void exp(View view){

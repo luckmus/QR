@@ -32,7 +32,13 @@ public class TextMessageData extends AbstractMessageData {
 
     public TextMessageData(byte[] data){
         try {
-            this.text = data == null?"":new JSONObject(new String(data)).getString(TEXT);
+            if (data!=null){
+                JSONObject json = new JSONObject(new String(data));
+                this.text = json.get(TEXT).toString();
+                this.encode = json.get(ENCODE).toString();
+            }else{
+                this.text = "";
+            }
         } catch (JSONException e) {
             e.printStackTrace();
             this.text = "error on load";
@@ -47,7 +53,7 @@ public class TextMessageData extends AbstractMessageData {
     @Override
     public JSONObject toJSON() throws JSONException {
         JSONObject res = new JSONObject().put(TEXT,text).put(ENCODE, encode);
-        Log.i("QR", res.toString());
+        Log.i("TAG", res.toString());
         return res;
     }
 

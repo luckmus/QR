@@ -147,7 +147,7 @@ public class DAO {
 
     public Message getMessage(long id){
         try(Cursor cursor = db.query(TABLE_MESSAGE,
-                new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_READ },
+                new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_READ, MESSAGE_LOGIN },
                 FIELD_ID+"=?", new String[]{Long.toString(id)},
                 null,null, MESSAGE_GEN_DATE+" desc");) {
             Collection<Message> res = readMessages(cursor);
@@ -157,7 +157,7 @@ public class DAO {
 
     public Collection<Message> getMessages(long idChat){
         try(Cursor cursor = db.query(TABLE_MESSAGE,
-                new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_READ },
+                new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_READ, MESSAGE_LOGIN  },
                 MESSAGE_ID_CHAT+"=?", new String[]{Long.toString(idChat)},
                 null,null, MESSAGE_GEN_DATE+" desc");) {
             return readMessages(cursor);
@@ -170,7 +170,7 @@ public class DAO {
             return getMessages(idChat, 1, 2);
         }
         try(Cursor cursor = db.query(TABLE_MESSAGE,
-                new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_READ },
+                new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_READ, MESSAGE_LOGIN  },
                 MESSAGE_ID_CHAT+"=? AND "+MESSAGE_GEN_DATE+"<?", new String[]{Long.toString(idChat), startDate==null?"": iso8601Format.format(startDate)},
                 //MESSAGE_ID_CHAT+"=?", new String[]{Long.toString(idChat)},
                 null,null, MESSAGE_GEN_DATE+" desc");) {
@@ -191,7 +191,7 @@ public class DAO {
 
     public Collection<Message> getMessages(long idChat, int offset, int size){
         try(Cursor cursor = db.query(TABLE_MESSAGE,
-                new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_LOGIN },
+                new String[]{FIELD_ID, MESSAGE_ID_CHAT, MESSAGE_DATA, MESSAGE_INS_DATE, MESSAGE_GEN_DATE, MESSAGE_READ, MESSAGE_LOGIN },
                 MESSAGE_ID_CHAT+"=?", new String[]{Long.toString(idChat)},
                 null,null, MESSAGE_GEN_DATE+" desc",
                 String.format("%d, %d", offset, size));) {
